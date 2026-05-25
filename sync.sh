@@ -64,19 +64,19 @@ DEVICE_DB="$TOP/.device_manifest"
 
 if [ ! -f "$DEVICE_DB" ] || [ ! -s "$DEVICE_DB" ]; then
     cat << 'EOF' > "$DEVICE_DB"
-Pixel 7 (Panther)|panther|panther|GS201|pantah
-Pixel 7 Pro (Cheetah)|cheetah|cheetah|GS201|pantah
-Pixel 7a (Lynx)|lynx|lynx|GS201|pantah
-Pixel 8 (Shiba)|shiba|shiba|ZUMA|shiba
-Pixel 8 Pro (Husky)|husky|husky|ZUMA|shiba
-Pixel 8a (Akita)|akita|akita|ZUMA|shiba
-Pixel 9 (Tokay)|tokay|tokay|ZUMAPRO|caimito
-Pixel 9 Pro (Caiman)|caiman|caiman|ZUMAPRO|caimito
-Pixel 9 Pro XL (Komodo)|komodo|komodo|ZUMAPRO|caimito
-Pixel 9a (Tegu)|tegu|tegu|ZUMAPRO|tegu
-Pixel 10 (Frankel)|frankel|frankel|LAGUNA|frankel
-Pixel 10 Pro (Blazer)|blazer|blazer|LAGUNA|frankel
-Pixel 10 Pro XL (Mustard)|mustard|mustard|LAGUNA|frankel
+Pixel 7 (Panther)|panther|panther|GS201|git@github.com:Alch3myOS-Devices/device_google_pantah-kernels.git|pantah-kernels|16
+Pixel 7 Pro (Cheetah)|cheetah|cheetah|GS201|git@github.com:Alch3myOS-Devices/device_google_pantah-kernels.git|pantah-kernels|16
+Pixel 7a (Lynx)|lynx|lynx|GS201|git@github.com:Alch3myOS-Devices/device_google_lynx-kernels.git|lynx-kernels|16
+Pixel 8 (Shiba)|shiba|shiba|ZUMA|git@github.com:Alch3myOS-Devices/device_google_shusky-kernels.git|shusky-kernels|16
+Pixel 8 Pro (Husky)|husky|husky|ZUMA|git@github.com:Alch3myOS-Devices/device_google_shusky-kernels.git|shusky-kernels|16
+Pixel 8a (Akita)|akita|akita|ZUMA|git@github.com:Alch3myOS-Devices/device_google_akita-kernels.git|akita-kernels|16
+Pixel 9 (Tokay)|tokay|tokay|ZUMAPRO|git@codeberg.org:Pyrtle93/device_google_caimito-kernels.git|caimito-kernels|16-qpr2
+Pixel 9 Pro (Caiman)|caiman|caiman|ZUMAPRO|git@codeberg.org:Pyrtle93/device_google_caimito-kernels.git|caimito-kernels|16-qpr2
+Pixel 9 Pro XL (Komodo)|komodo|komodo|ZUMAPRO|git@codeberg.org:Pyrtle93/device_google_caimito-kernels.git|caimito-kernels|16-qpr2
+Pixel 9a (Tegu)|tegu|tegu|ZUMAPRO|git@codeberg.org:Pyrtle93/device_google_tegu-kernels.git|tegu-kernels|16-qpr2
+Pixel 10 (Frankel)|frankel|frankel|LAGUNA|git@github.com:Alch3myOS-Devices/device_google_muzel-kernels.git|muzel-kernels|16
+Pixel 10 Pro (Blazer)|blazer|blazer|LAGUNA|git@github.com:Alch3myOS-Devices/device_google_muzel-kernels.git|muzel-kernels|16
+Pixel 10 Pro XL (Mustard)|mustard|mustard|LAGUNA|git@github.com:Alch3myOS-Devices/device_google_muzel-kernels.git|muzel-kernels|16
 EOF
 fi
 
@@ -100,15 +100,7 @@ sync_worker() {
     [[ "$URL" == *"TheMuppets"* ]] && ACTUAL_BRANCH="lineage-23.2"
     
     local REMOTE_NAME="origin"
-    [[ "$URL" == *"origin1"* ]] && REMOTE_NAME="origin1"
-
-    if [[ "$URL" == *"origin1"* ]]; then
-        if [[ "$BRANCH" == "16-qpr2" ]]; then
-            ACTUAL_BRANCH="16-qpr2"
-        else
-            ACTUAL_BRANCH="16"
-        fi
-    fi
+    [[ "$URL" == *"Pyrtle93"* ]] && REMOTE_NAME="origin1"
 
     if [ ! -d "$DIR/.git" ]; then
         rm -rf "$DIR"
@@ -259,7 +251,7 @@ if [ -n "$last_custom_name" ]; then
     if [[ "$quick_resp" =~ ^[Yy]$ || -z "$quick_resp" ]]; then
         target_blueprint=$(grep "^$last_custom_name" "$DEVICE_DB")
         if [ -n "$target_blueprint" ]; then
-            IFS="|" read -r D_DISPLAY D_FOLDER D_MAKEFILE FAMILY K_NAME <<< "$target_blueprint"
+            IFS="|" read -r D_DISPLAY D_FOLDER D_MAKEFILE FAMILY K_URL K_NAME K_BRANCH <<< "$target_blueprint"
             USE_FAST_TRACK=true
         else
             echo -e "${C_WARN}[!] Cached profile no longer exists in database layout. Falling back to menu...${NC}"
@@ -283,7 +275,7 @@ if [ "$USE_FAST_TRACK" = false ]; then
             [[ -z "$clean_check" || "$line" =~ ^# ]] && continue
             
             device_lines+=("$line")
-            IFS="|" read -r d_display d_fold d_make d_fam d_kern <<< "$line"
+            IFS="|" read -r d_display d_fold d_make d_fam d_kurl d_kname d_kbranch <<< "$line"
             device_names+=("$d_display")
         done < "$DEVICE_DB"
 
@@ -368,19 +360,19 @@ if [ "$USE_FAST_TRACK" = false ]; then
                     echo -e "${C_GOSSIP}Type the option number or 'b' / 'back' to abort setup.${NC}\n"
 
                     blueprint_catalog=(
-                        "Pixel 7 (Panther)|panther|panther|GS201|pantah"
-                        "Pixel 7 Pro (Cheetah)|cheetah|cheetah|GS201|pantah"
-                        "Pixel 7a (Lynx)|lynx|lynx|GS201|pantah"
-                        "Pixel 8 (Shiba)|shiba|shiba|ZUMA|shiba"
-                        "Pixel 8 Pro (Husky)|husky|husky|ZUMA|shiba"
-                        "Pixel 8a (Akita)|akita|akita|ZUMA|shiba"
-                        "Pixel 9 (Tokay)|tokay|tokay|ZUMAPRO|caimito"
-                        "Pixel 9 Pro (Caiman)|caiman|caiman|ZUMAPRO|caimito"
-                        "Pixel 9 Pro XL (Komodo)|komodo|komodo|ZUMAPRO|caimito"
-                        "Pixel 9a (Tegu)|tegu|tegu|ZUMAPRO|tegu"
-                        "Pixel 10 (Frankel)|frankel|frankel|LAGUNA|frankel"
-                        "Pixel 10 Pro (Blazer)|blazer|blazer|LAGUNA|frankel"
-                        "Pixel 10 Pro XL (Mustard)|mustard|mustard|LAGUNA|frankel"
+                        "Pixel 7 (Panther)|panther|panther|GS201|git@github.com:Alch3myOS-Devices/device_google_pantah-kernels.git|pantah-kernels|16"
+                        "Pixel 7 Pro (Cheetah)|cheetah|cheetah|GS201|git@github.com:Alch3myOS-Devices/device_google_pantah-kernels.git|pantah-kernels|16"
+                        "Pixel 7a (Lynx)|lynx|lynx|GS201|git@github.com:Alch3myOS-Devices/device_google_lynx-kernels.git|lynx-kernels|16"
+                        "Pixel 8 (Shiba)|shiba|shiba|ZUMA|git@github.com:Alch3myOS-Devices/device_google_shusky-kernels.git|shusky-kernels|16"
+                        "Pixel 8 Pro (Husky)|husky|husky|ZUMA|git@github.com:Alch3myOS-Devices/device_google_shusky-kernels.git|shusky-kernels|16"
+                        "Pixel 8a (Akita)|akita|akita|ZUMA|git@github.com:Alch3myOS-Devices/device_google_akita-kernels.git|akita-kernels|16"
+                        "Pixel 9 (Tokay)|tokay|tokay|ZUMAPRO|git@codeberg.org:Pyrtle93/device_google_caimito-kernels.git|caimito-kernels|16-qpr2"
+                        "Pixel 9 Pro (Caiman)|caiman|caiman|ZUMAPRO|git@codeberg.org:Pyrtle93/device_google_caimito-kernels.git|caimito-kernels|16-qpr2"
+                        "Pixel 9 Pro XL (Komodo)|komodo|komodo|ZUMAPRO|git@codeberg.org:Pyrtle93/device_google_caimito-kernels.git|caimito-kernels|16-qpr2"
+                        "Pixel 9a (Tegu)|tegu|tegu|ZUMAPRO|git@codeberg.org:Pyrtle93/device_google_tegu-kernels.git|tegu-kernels|16-qpr2"
+                        "Pixel 10 (Frankel)|frankel|frankel|LAGUNA|git@github.com:Alch3myOS-Devices/device_google_muzel-kernels.git|muzel-kernels|16"
+                        "Pixel 10 Pro (Blazer)|blazer|blazer|LAGUNA|git@github.com:Alch3myOS-Devices/device_google_muzel-kernels.git|muzel-kernels|16"
+                        "Pixel 10 Pro XL (Mustard)|mustard|mustard|LAGUNA|git@github.com:Alch3myOS-Devices/device_google_muzel-kernels.git|muzel-kernels|16"
                         "Fully Manual Construction Walkthrough"
                     )
 
@@ -408,16 +400,20 @@ if [ "$USE_FAST_TRACK" = false ]; then
                             echo -ne "${C_WARN}Folder: ${NC}"; read -r new_folder
                             echo -ne "${C_WARN}Makefile Name: ${NC}"; read -r new_makefile
                             echo -ne "${C_WARN}Platform Family: ${NC}"; read -r new_family
-                            echo -ne "${C_WARN}Kernel Name: ${NC}"; read -r new_kernel
+                            echo -ne "${C_WARN}Kernel Git URL: ${NC}"; read -r new_kurl
+                            echo -ne "${C_WARN}Kernel Destination Folder Name: ${NC}"; read -r new_kname
+                            echo -ne "${C_WARN}Kernel Branch: ${NC}"; read -r new_kbranch
                             
                             new_display=$(echo "$new_display" | xargs)
                             new_folder=$(echo "$new_folder" | xargs)
                             new_makefile=$(echo "$new_makefile" | xargs)
                             new_family=$(echo "$new_family" | xargs)
-                            new_kernel=$(echo "$new_kernel" | xargs)
+                            new_kurl=$(echo "$new_kurl" | xargs)
+                            new_kname=$(echo "$new_kname" | xargs)
+                            new_kbranch=$(echo "$new_kbranch" | xargs)
 
-                            if [[ -n "$new_display" && -n "$new_folder" && -n "$new_makefile" && -n "$new_family" && -n "$new_kernel" ]]; then
-                                echo "$new_display|$new_folder|$new_makefile|$new_family|$new_kernel" >> "$DEVICE_DB"
+                            if [[ -n "$new_display" && -n "$new_folder" && -n "$new_makefile" && -n "$new_family" && -n "$new_kurl" && -n "$new_kname" && -n "$new_kbranch" ]]; then
+                                echo "$new_display|$new_folder|$new_makefile|$new_family|$new_kurl|$new_kname|$new_kbranch" >> "$DEVICE_DB"
                                 echo "last_custom_name=\"$new_display\"" > "$CURRENT_DIR/.build_session"
                                 echo -e "${C_ACCENT}[+] Profile created successfully.${NC}"
                                 sleep 1.5
@@ -429,10 +425,10 @@ if [ "$USE_FAST_TRACK" = false ]; then
                         else
                             bp_idx=$((REPLY-1))
                             target_bp_line="${blueprint_catalog[$bp_idx]}"
-                            IFS="|" read -r new_display new_folder new_makefile new_family new_kernel <<< "$target_bp_line"
+                            IFS="|" read -r new_display new_folder new_makefile new_family new_kurl new_kname new_kbranch <<< "$target_bp_line"
                             
                             if [[ -n "$new_display" && -n "$new_folder" ]]; then
-                                echo "$new_display|$new_folder|$new_makefile|$new_family|$new_kernel" >> "$DEVICE_DB"
+                                echo "$new_display|$new_folder|$new_makefile|$new_family|$new_kurl|$new_kname|$new_kbranch" >> "$DEVICE_DB"
                                 echo "last_custom_name=\"$new_display\"" > "$CURRENT_DIR/.build_session"
                                 echo -e "${C_ACCENT}[+] Dynamic catalog injected for $new_display.${NC}"
                                 sleep 1.5
@@ -448,7 +444,7 @@ if [ "$USE_FAST_TRACK" = false ]; then
             elif [ -n "$d_opt" ]; then
                 idx=$((REPLY-1))
                 target_blueprint="${device_lines[$idx]}"
-                IFS="|" read -r D_DISPLAY D_FOLDER D_MAKEFILE FAMILY K_NAME <<< "$target_blueprint"
+                IFS="|" read -r D_DISPLAY D_FOLDER D_MAKEFILE FAMILY K_URL K_NAME K_BRANCH <<< "$target_blueprint"
                 echo "last_custom_name=\"$D_DISPLAY\"" > "$CURRENT_DIR/.build_session"
                 break 2 
             fi
@@ -458,7 +454,6 @@ fi
 
 B_MAIN="16"
 B_LOS="lineage-23.2"
-B_CB="16-qpr2"
 
 REPOS=(
     "git@github.com:Alch3myOS-Devices/device_google_gs-common.git|device/google/gs-common|$B_MAIN" 
@@ -480,14 +475,8 @@ else
     REPOS+=("git@github.com:LineageOS/android_device_google_${D_FOLDER}.git|device/google/${D_FOLDER}|$B_LOS")
 fi
 
-# Legacy Hot-Fix Catchment: Automatically parses legacy instances where the old file mapped 'tokay' directly.
-if [[ "$D_FOLDER" == "tokay" || "$D_FOLDER" == "caiman" || "$D_FOLDER" == "komodo" ]]; then
-    [[ "$K_NAME" == "tokay" ]] && K_NAME="caimito"
-elif [[ "$D_FOLDER" == "tegu" ]]; then
-    [[ "$K_NAME" == "tokay" ]] && K_NAME="tegu"
-fi
-
-REPOS+=("git@codeberg.org:Pyrtle93/device_google_${K_NAME}-kernels.git|device/google/${K_NAME}-kernels|$B_CB")
+# Injects the precise tracked repository path, folder layout, and branch mapping completely dynamically
+REPOS+=("${K_URL}|device/google/${K_NAME}|${K_BRANCH}")
 REPOS+=("git@github.com:TheMuppets/proprietary_vendor_google_${D_MAKEFILE}.git|vendor/google/${D_MAKEFILE}|$B_LOS")
 
 if [[ "$FAMILY" == "LAGUNA" ]]; then
@@ -589,4 +578,3 @@ if [[ "$response" =~ ^([yY])$ ]]; then
     
     /bin/bash 
 fi
-
